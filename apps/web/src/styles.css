@@ -31,3 +31,30 @@ h3 { margin: 0 0 8px 0; }
 .log-line.level-warn { border-left-color: var(--warn); }
 .log-line.level-error { border-left-color: var(--bad); }
 .log-line.level-info { border-left-color: #2b315c; }
+
+.save-menu { position: relative; }
+.save-menu .dropdown {
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background: #12152b;
+  border: 1px solid #242a55;
+  border-radius: 12px;
+  padding: 10px;
+  width: 220px;
+  display: grid;
+  gap: 8px;
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.save-menu .toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  background: #161a39;
+  border: 1px solid #2a2f55;
+  padding: 6px 10px;
+  border-radius: 8px;
+  opacity: .95;
+  font-size: 12px;
+}

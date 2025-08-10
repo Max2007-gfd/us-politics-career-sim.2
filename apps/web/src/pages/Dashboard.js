@@ -4,27 +4,84 @@ import Panel from '../components/Panel';
 import { useGameStore } from '../state/useGame';
 import { fmtMoney } from '../lib/format';
 export default function Dashboard() {
-    const { state, nextWeek, doAction, clearLog } = useGameStore();
+    const { state, nextWeek, doAction, clearLog, exportSave, importSave, quickSave, quickLoad } = useGameStore();
     const [showLog, setShowLog] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [autoSave, setAutoSave] = useState(false);
+    const [saveMsg, setSaveMsg] = useState('');
     const logRef = useRef(null);
-    // Remember toggle in localStorage
+    const fileRef = useRef(null);
+    // Remember toggle + autosave prefs
     useEffect(() => {
-        const raw = localStorage.getItem('usp:showLog');
-        if (raw !== null)
-            setShowLog(raw === '1');
+        const rawShow = localStorage.getItem('usp:showLog');
+        if (rawShow !== null)
+            setShowLog(rawShow === '1');
+        const rawAuto = localStorage.getItem('usp:autoSave');
+        if (rawAuto !== null)
+            setAutoSave(rawAuto === '1');
     }, []);
     useEffect(() => {
         localStorage.setItem('usp:showLog', showLog ? '1' : '0');
     }, [showLog]);
+    useEffect(() => {
+        localStorage.setItem('usp:autoSave', autoSave ? '1' : '0');
+    }, [autoSave]);
     // Auto-scroll to newest entry
     useEffect(() => {
         if (!showLog || !logRef.current)
             return;
         logRef.current.scrollTop = logRef.current.scrollHeight;
     }, [state.log.length, showLog]);
-    // Filter by level
+    // Optional: autosave every time the week number changes
+    useEffect(() => {
+        if (!autoSave)
+            return;
+        quickSave();
+        flash('Autosaved');
+    }, [state.week]); // eslint-disable-line react-hooks/exhaustive-deps
     const filteredLog = filter === 'all' ? state.log : state.log.filter(l => l.level === filter);
+    // File export/import
+    const handleExport = () => {
+        const json = exportSave();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = `usp-save-${stamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        flash('Exported save');
+    };
+    const handleImportClick = () => fileRef.current?.click();
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file)
+            return;
+        const text = await file.text();
+        const res = importSave(text);
+        if (!res.ok)
+            alert(`Import failed: ${res.error}`);
+        else
+            flash('Imported save');
+        e.target.value = '';
+    };
+    // Quick save/load
+    const doQuickSave = () => { quickSave(); flash('Quick saved'); };
+    const doQuickLoad = () => {
+        const res = quickLoad();
+        if (!res.ok)
+            alert(res.error);
+        else
+            flash('Quick loaded');
+    };
+    // Tiny “toast” helper
+    const flash = (msg) => {
+        setSaveMsg(msg);
+        setTimeout(() => setSaveMsg(''), 1600);
+    };
     return (_jsxs("div", { className: "row", style: { gap: 12 }, children: [_jsxs("div", { style: { width: 300, display: 'grid', gap: 12 }, children: [_jsxs(Panel, { title: "Candidate", right: _jsxs("span", { className: "sub", children: ["Seed: ", state.seed] }), children: [_jsx("div", { className: "row", children: _jsxs("div", { className: "grow", children: [_jsxs("div", { className: "sub", children: [state.player.name, " \u00B7 ", state.player.party] }), _jsxs("div", { className: "sub", children: ["District: ", state.district.name] })] }) }), _jsxs("div", { style: { display: 'grid', gap: 6, marginTop: 6 }, children: [_jsxs("div", { className: "stat", children: ["Goodwill: ", state.stats.goodwill] }), _jsxs("div", { className: "stat", children: ["Integrity: ", state.stats.integrity] }), _jsxs("div", { className: "stat", children: ["Capital: ", state.stats.capital] }), _jsxs("div", { className: "stat", children: ["Favor Chips: ", state.favors.chips] }), _jsxs("div", { className: "stat", children: ["Funds: ", fmtMoney(state.funds)] })] })] }), _jsxs(Panel, { title: "Calendar", children: [_jsxs("div", { className: "sub", children: ["Week ", state.week, " \u2014 Blocks left: ", state.calendar.blocksLeft] }), _jsxs("div", { style: { display: 'grid', gap: 8, marginTop: 8 }, children: [_jsx("button", { className: "btn", onClick: () => doAction('meet-stakeholder'), children: "Meet Stakeholder" }), _jsx("button", { className: "btn", onClick: () => doAction('solve-case'), children: "Solve Casework" }), _jsx("button", { className: "btn", onClick: () => doAction('draft-policy'), children: "Draft Policy" }), _jsx("button", { className: "btn", onClick: () => doAction('redeem-favor'), children: "Redeem Favor" }), _jsx("button", { className: "btn", onClick: () => doAction('fundraise-lite'), children: "Fundraise (Lite)" }), _jsx("button", { className: "btn", onClick: nextWeek, children: "End Week" })] })] })] }), _jsxs("div", { className: "grow", style: { display: 'grid', gap: 12 }, children: [_jsx(Panel, { title: "Activity Log", right: _jsxs("div", { className: "row", style: { gap: 8 }, children: [_jsxs("select", { className: "btn", value: filter, onChange: e => setFilter(e.target.value), children: [_jsx("option", { value: "all", children: "All" }), _jsx("option", { value: "info", children: "Info" }), _jsx("option", { value: "good", children: "Good" }), _jsx("option", { value: "warn", children: "Warnings" }), _jsx("option", { value: "error", children: "Errors" })] }), _jsx("button", { className: "btn", onClick: clearLog, children: "Clear" }), _jsx("button", { className: "btn", onClick: () => setShowLog(s => !s), children: showLog ? 'Hide' : 'Show' })] }), children: _jsx("div", { ref: logRef, className: "log", style: {
                                 height: showLog ? 360 : 0,
                                 overflowY: showLog ? 'auto' : 'hidden',

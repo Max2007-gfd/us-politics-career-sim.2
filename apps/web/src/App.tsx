@@ -4,6 +4,8 @@ import Stakeholders from './pages/Stakeholders'
 import PolicyLab from './pages/PolicyLab'
 import Casework from './pages/Casework'
 import { ErrorBoundary } from './ErrorBoundary'
+import SaveMenu from './components/SaveMenu'
+
 
 export default function App() {
   const [tab, setTab] = useState<'dash'|'stake'|'policy'|'case'>('dash')
@@ -17,6 +19,7 @@ export default function App() {
           <button className="btn" onClick={() => setTab('stake')}>Stakeholders</button>
           <button className="btn" onClick={() => setTab('policy')}>Policy Lab</button>
           <button className="btn" onClick={() => setTab('case')}>Casework</button>
+          <SaveMenu />
         </nav>
       </header>
       <ErrorBoundary>
