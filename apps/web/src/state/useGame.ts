@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import * as Core from '../../../packages/core/src'
+import * as Core from '@usp/core' // uses the alias set in vite.config.ts
 
 type Store = {
   state: Core.GameState
@@ -8,15 +8,29 @@ type Store = {
   meetStakeholder: (id: string) => void
   draftPolicy: (issueId: string, instrument: Core.Instrument) => void
   solveCase: (id: string) => void
+  clearLog: () => void
 }
 
 const initial = Core.createInitialState()
 
-export const useGameStore = create<Store>((set, get) => ({
+export const useGameStore = create<Store>((set) => ({
   state: initial,
-  nextWeek: () => set(s => ({ state: Core.simulateWeek(s.state) })),
-  doAction: (kind) => set(s => ({ state: Core.doAction(s.state, kind) })),
-  meetStakeholder: (id) => set(s => ({ state: Core.meetStakeholder(s.state, id) })),
-  draftPolicy: (issueId, instrument) => set(s => ({ state: Core.draftPolicy(s.state, issueId, instrument) })),
-  solveCase: (id) => set(s => ({ state: Core.solveCase(s.state, id) })),
+
+  nextWeek: () =>
+    set((s) => ({ state: Core.simulateWeek(s.state) })),
+
+  doAction: (kind) =>
+    set((s) => ({ state: Core.doAction(s.state, kind) })),
+
+  meetStakeholder: (id) =>
+    set((s) => ({ state: Core.meetStakeholder(s.state, id) })),
+
+  draftPolicy: (issueId, instrument) =>
+    set((s) => ({ state: Core.draftPolicy(s.state, issueId, instrument) })),
+
+  solveCase: (id) =>
+    set((s) => ({ state: Core.solveCase(s.state, id) })),
+
+  clearLog: () =>
+    set((s) => ({ state: { ...s.state, log: [] } })),
 }))

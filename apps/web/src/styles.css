@@ -23,4 +23,11 @@ h3 { margin: 0 0 8px 0; }
 .grow { flex:1; }
 .stat { background: var(--panel-2); border: 1px solid #2a2f55; border-radius: 10px; padding: 8px; }
 .bad { color: var(--bad); } .good { color: var(--good); } .warn { color: var(--warn); }
-.log { background: #12152b; border: 1px solid #242a55; border-radius: 10px; padding: 10px; overflow-y: auto; height: 220px; }
+.log { background: #12152b; border: 1px solid #242a55; border-radius: 10px; padding: 10px; overflow-y: auto; height: 360px; }
+.log-line { display:flex; align-items:center; gap:8px; padding:4px 0; border-left:3px solid transparent; }
+.log-line .ts { opacity: 0.7; font-size: 12px; width: 64px; }
+.log-line .tag { font-size: 11px; padding: 2px 6px; border-radius: 999px; border: 1px solid #2a2f55; background: #161a39; }
+.log-line.level-good { border-left-color: var(--good); }
+.log-line.level-warn { border-left-color: var(--warn); }
+.log-line.level-error { border-left-color: var(--bad); }
+.log-line.level-info { border-left-color: #2b315c; }

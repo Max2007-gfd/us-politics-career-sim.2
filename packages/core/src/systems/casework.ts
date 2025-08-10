@@ -12,8 +12,8 @@ export const newCasework = (): Casework => ({
 export const resolve = (cw: Casework, id: string): [Casework, number] => {
   const idx = cw.queue.findIndex(c => c.id === id)
   if (idx === -1) return [cw, 0]
-  const t = cw.queue[idx]
-  const next = cw.queue.slice(0, idx).concat(cw.queue.slice(idx + 1))
-  const goodwillGain = Math.max(1, 6 - t.urgency) // higher urgency yields higher visible win, but keep simple
+  const t = cw.queue[idx]!                                 // assert after index check
+const next = cw.queue.slice(0, idx).concat(cw.queue.slice(idx + 1))
+const goodwillGain = Math.max(1, 6 - t.urgency)
   return [{ queue: next }, goodwillGain]
 }

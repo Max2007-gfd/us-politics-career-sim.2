@@ -9,6 +9,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "skipLibCheck": true,
+    "allowJs": false,
     "baseUrl": ".",
     "paths": {
       "@usp/core": ["../../packages/core/src/index.ts"]
