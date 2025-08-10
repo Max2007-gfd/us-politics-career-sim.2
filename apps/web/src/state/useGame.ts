@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import * as Core from '@usp/core' // uses the alias set in vite.config.ts
+import * as Core from '@usp/core' // alias set in vite.config.ts
 
 type Store = {
   state: Core.GameState
@@ -9,28 +9,54 @@ type Store = {
   draftPolicy: (issueId: string, instrument: Core.Instrument) => void
   solveCase: (id: string) => void
   clearLog: () => void
+
+  // File-based saves
+  exportSave: () => string
+  importSave: (raw: string) => { ok: boolean; error?: string }
+
+  // Quick save/load (localStorage)
+  quickSave: () => void
+  quickLoad: () => { ok: boolean; error?: string }
 }
 
 const initial = Core.createInitialState()
 
-export const useGameStore = create<Store>((set) => ({
+export const useGameStore = create<Store>((set, get) => ({
   state: initial,
 
-  nextWeek: () =>
-    set((s) => ({ state: Core.simulateWeek(s.state) })),
+  nextWeek: () => set(s => ({ state: Core.simulateWeek(s.state) })),
+  doAction: (kind) => set(s => ({ state: Core.doAction(s.state, kind) })),
+  meetStakeholder: (id) => set(s => ({ state: Core.meetStakeholder(s.state, id) })),
+  draftPolicy: (issueId, instrument) => set(s => ({ state: Core.draftPolicy(s.state, issueId, instrument) })),
+  solveCase: (id) => set(s => ({ state: Core.solveCase(s.state, id) })),
+  clearLog: () => set(s => ({ state: { ...s.state, log: [] } })),
 
-  doAction: (kind) =>
-    set((s) => ({ state: Core.doAction(s.state, kind) })),
+  exportSave: () => Core.serialize(get().state),
+  importSave: (raw: string) => {
+    try {
+      const next = Core.deserialize(raw)
+      set(() => ({ state: next }))
+      return { ok: true }
+    } catch (e: any) {
+      return { ok: false, error: e?.message ?? 'Invalid save file' }
+    }
+  },
 
-  meetStakeholder: (id) =>
-    set((s) => ({ state: Core.meetStakeholder(s.state, id) })),
-
-  draftPolicy: (issueId, instrument) =>
-    set((s) => ({ state: Core.draftPolicy(s.state, issueId, instrument) })),
-
-  solveCase: (id) =>
-    set((s) => ({ state: Core.solveCase(s.state, id) })),
-
-  clearLog: () =>
-    set((s) => ({ state: { ...s.state, log: [] } })),
+  quickSave: () => {
+    const json = Core.serialize(get().state)
+    try {
+      localStorage.setItem('usp:quickSave', json)
+    } catch {}
+  },
+  quickLoad: () => {
+    try {
+      const raw = localStorage.getItem('usp:quickSave')
+      if (!raw) return { ok: false, error: 'No quick save found' }
+      const next = Core.deserialize(raw)
+      set(() => ({ state: next }))
+      return { ok: true }
+    } catch (e: any) {
+      return { ok: false, error: e?.message ?? 'Quick load failed' }
+    }
+  },
 }))
