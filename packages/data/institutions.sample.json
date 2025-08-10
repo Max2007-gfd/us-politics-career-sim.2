@@ -1,0 +1,28 @@
+[
+  {
+    "id": "inst:council",
+    "name": "Riverton City Council",
+    "type": "council",
+    "rules": {
+      "majority": 6,
+      "seats": 11
+    }
+  },
+  {
+    "id": "inst:committee-works",
+    "name": "Public Works Committee",
+    "type": "committee",
+    "rules": {
+      "majority": 3,
+      "seats": 5
+    }
+  },
+  {
+    "id": "inst:permits-agency",
+    "name": "Permits & Licensing Agency",
+    "type": "agency",
+    "rules": {
+      "majority": 1
+    }
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "issue:housing",
+    "name": "Affordable Housing",
+    "instruments": [
+      "zoning",
+      "subsidy",
+      "program"
+    ],
+    "cost": 4,
+    "controversy": 3,
+    "expertiseNeeded": 50
+  },
+  {
+    "id": "issue:jobs",
+    "name": "Good Jobs",
+    "instruments": [
+      "program",
+      "subsidy",
+      "tax"
+    ],
+    "cost": 3,
+    "controversy": 2,
+    "expertiseNeeded": 40
+  },
+  {
+    "id": "issue:safety",
+    "name": "Public Safety",
+    "instruments": [
+      "program",
+      "regulation"
+    ],
+    "cost": 3,
+    "controversy": 4,
+    "expertiseNeeded": 40
+  }
+]

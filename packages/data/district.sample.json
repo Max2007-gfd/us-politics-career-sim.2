@@ -1,0 +1,10 @@
+{
+  "id": "district:demo",
+  "name": "Riverton \u2014 Ward 3",
+  "lean": 1,
+  "priorities": [
+    "housing",
+    "jobs",
+    "safety"
+  ]
+}

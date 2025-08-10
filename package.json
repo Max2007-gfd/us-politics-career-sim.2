@@ -1,0 +1,22 @@
+{
+  "name": "us-politics-career-sim",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm -C apps/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -C packages/sim-tests test",
+    "validate-data": "tsx tools/validate-data.ts",
+    "format": "prettier -w ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5",
+    "@types/node": "^22.0.0",
+    "zod": "^3.23.8"
+  }
+}

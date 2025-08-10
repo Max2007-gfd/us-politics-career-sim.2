@@ -1,0 +1,13 @@
+[
+  {
+    "id": "event:vacancy-parkboard",
+    "name": "Vacancy \u2014 Park Board Seat",
+    "type": "vacancy",
+    "requirement": "goodwill>30"
+  },
+  {
+    "id": "event:storm",
+    "name": "Storm Warning",
+    "type": "crisis"
+  }
+]

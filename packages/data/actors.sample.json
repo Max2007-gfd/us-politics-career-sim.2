@@ -1,0 +1,46 @@
+[
+  {
+    "id": "actor:party-chair",
+    "name": "County Party Chair",
+    "kind": "person",
+    "faction": "moderates",
+    "leverage": 70,
+    "disposition": 0,
+    "asks": [
+      "help-precincts"
+    ]
+  },
+  {
+    "id": "actor:labor-council",
+    "name": "Labor Council",
+    "kind": "org",
+    "faction": "labor",
+    "leverage": 65,
+    "disposition": -10,
+    "asks": [
+      "apprenticeships"
+    ]
+  },
+  {
+    "id": "actor:chamber",
+    "name": "Chamber of Commerce",
+    "kind": "org",
+    "faction": "business",
+    "leverage": 60,
+    "disposition": 0,
+    "asks": [
+      "permit-simplify"
+    ]
+  },
+  {
+    "id": "actor:neighborhood",
+    "name": "Neighborhood Assoc.",
+    "kind": "org",
+    "faction": "activists",
+    "leverage": 40,
+    "disposition": 5,
+    "asks": [
+      "traffic-calming"
+    ]
+  }
+]

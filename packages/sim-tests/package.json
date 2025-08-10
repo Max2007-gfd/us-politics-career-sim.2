@@ -1,0 +1,17 @@
+{
+  "name": "@usp/sim-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "echo (no tsconfig)"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.5",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@usp/core": "workspace:*"
+  }
+}
