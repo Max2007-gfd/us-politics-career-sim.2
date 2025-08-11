@@ -14,6 +14,7 @@ export default function Dashboard() {
 
   const logRef = useRef<HTMLDivElement | null>(null)
   const fileRef = useRef<HTMLInputElement | null>(null)
+   const [confirmNextWeek, setConfirmNextWeek] = useState(false)
 
   // Remember toggle + autosave prefs
   useEffect(() => {
@@ -115,7 +116,16 @@ export default function Dashboard() {
             <button className="btn" onClick={() => doAction('draft-policy')}>Draft Policy</button>
             <button className="btn" onClick={() => doAction('redeem-favor')}>Redeem Favor</button>
             <button className="btn" onClick={() => doAction('fundraise-lite')}>Fundraise (Lite)</button>
-            <button className="btn" onClick={nextWeek}>End Week</button>
+            <button
+  className="btn"
+  onClick={() => {
+    const auto = localStorage.getItem('usp:autoSave') === '1'
+    if (!auto) { setConfirmNextWeek(true); return }
+    nextWeek()
+  }}
+>
+  Next Week
+</button>
           </div>
         </Panel>
       </div>
@@ -162,6 +172,48 @@ export default function Dashboard() {
           <div className="sub">This is a governance-first career sim vertical slice. No elections in v0.1.0.</div>
         </Panel>       
       </div>
+      {confirmNextWeek && (
+  <div
+    onClick={() => setConfirmNextWeek(false)}
+    style={{
+      position: 'fixed',
+      top: 0, right: 0, bottom: 0, left: 0,
+      background: 'rgba(0,0,0,0.35)',
+      display: 'grid',
+      placeItems: 'center',
+      zIndex: 1000,
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: 'var(--panel, #fff)',
+        border: '1px solid var(--border, #e5e5e5)',
+        borderRadius: 12,
+        padding: 16,
+        width: 360,
+        boxShadow: '0 12px 28px rgba(0,0,0,0.18)',
+      }}
+    >
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>Advance to next week?</div>
+      <div className="sub" style={{ marginBottom: 12 }}>
+        Autosave is <b>OFF</b>. You might lose progress since your last save.
+      </div>
+      <div className="row" style={{ justifyContent: 'flex-end', gap: 8, display: 'flex' }}>
+        <button className="btn" onClick={() => setConfirmNextWeek(false)}>Cancel</button>
+        <button
+          className="btn"
+          onClick={() => {
+            setConfirmNextWeek(false)
+            nextWeek()
+          }}
+        >
+          Proceed
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   )
 }
