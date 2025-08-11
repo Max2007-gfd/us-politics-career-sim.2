@@ -4,12 +4,17 @@ export type Actor = {
   id: string
   name: string
   kind: 'person' | 'org'
-  faction: Faction
-  leverage: number          // 0..100
-  disposition: number       // -100..100
+  faction: 'moderates' | 'labor' | 'business' | 'activists'
+  leverage: number
+  disposition: number
   asks: string[]
-  memory?: string[]         // last interactions
+  memory?: string[]
+
+  // NEW endorsement fields
+  endorsed?: boolean                 // true when they’ve endorsed you
+  lastEndorseAskWeek?: number        // last week you asked for an endorsement (cooldown)
 }
+
 
 export type Institution = {
   id: string

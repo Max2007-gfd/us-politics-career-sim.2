@@ -23,6 +23,35 @@ const sampleIssues = [
     { id: 'issue:safety', name: 'Public Safety', instruments: ['program', 'regulation'], cost: 3, controversy: 4, expertiseNeeded: 40 },
 ];
 const rngFor = (seed, tick) => new RNG(seed + ':' + String(tick));
+function getActorRelation(a) {
+    // Use whatever your Actor actually has; many seeds use `disposition`
+    return (a.relation ?? a.disposition ?? 0) | 0;
+}
+function canEndorse(state, id) {
+    const sh = state.actors.find((s) => s.id === id);
+    if (!sh)
+        return false;
+    // If you track an `endorsed` flag on actors, also guard it here:
+    // if ((sh as any).endorsed) return false
+    // Threshold: needs at least +2 relationship to endorse
+    return getActorRelation(sh) >= 2;
+}
+function makeMoreActors(proto) {
+    return [
+        { ...proto, id: 'labor-afl', name: 'State AFL-CIO' },
+        { ...proto, id: 'teachers', name: 'Teachers Union' },
+        { ...proto, id: 'chamber', name: 'Chamber of Commerce' },
+        { ...proto, id: 'smallbiz', name: 'Small Business Assoc.' },
+        { ...proto, id: 'enviro', name: 'Clean Air Coalition' },
+        { ...proto, id: 'police', name: 'Police Benevolent' },
+        { ...proto, id: 'firefighters', name: 'Firefighters Assoc.' },
+        { ...proto, id: 'parents', name: 'Parents Federation' },
+        { ...proto, id: 'faith', name: 'Faith Leaders Council' },
+        { ...proto, id: 'press', name: 'State Press Editors' },
+        { ...proto, id: 'donors', name: 'Major Donors Circle' },
+        { ...proto, id: 'grassroots', name: 'Grassroots Network' },
+    ];
+}
 export const createInitialState = (seed = 'demo-seed') => ({
     version: '0.1.0',
     seed,
@@ -34,7 +63,25 @@ export const createInitialState = (seed = 'demo-seed') => ({
     district: sampleDistrict,
     stats: { goodwill: 20, integrity: 80, capital: 10 },
     favors: Favors.newFavors(),
-    actors: sampleActors,
+    actors: (() => {
+        const base = sampleActors;
+        const proto = base[0]; // non-null: we know the sample seed has at least one actor
+        const extra = [
+            { ...proto, id: 'labor-afl', name: 'State AFL-CIO' },
+            { ...proto, id: 'teachers', name: 'Teachers Union' },
+            { ...proto, id: 'chamber', name: 'Chamber of Commerce' },
+            { ...proto, id: 'smallbiz', name: 'Small Business Assoc.' },
+            { ...proto, id: 'enviro', name: 'Clean Air Coalition' },
+            { ...proto, id: 'police', name: 'Police Benevolent' },
+            { ...proto, id: 'firefighters', name: 'Firefighters Assoc.' },
+            { ...proto, id: 'parents', name: 'Parents Federation' },
+            { ...proto, id: 'faith', name: 'Faith Leaders Council' },
+            { ...proto, id: 'press', name: 'State Press Editors' },
+            { ...proto, id: 'donors', name: 'Major Donors Circle' },
+            { ...proto, id: 'grassroots', name: 'Grassroots Network' },
+        ];
+        return [...base, ...extra];
+    })(),
     issues: sampleIssues,
     caseworkQueue: Casework.newCasework().queue,
     funds: 500,
@@ -134,4 +181,39 @@ export function solveCase(state, id) {
     const [cw, gw] = Casework.resolve({ queue: state.caseworkQueue }, id);
     const s = { ...state, calendar: consume(state.calendar, 1), caseworkQueue: cw.queue, stats: { ...state.stats, goodwill: Math.min(100, state.stats.goodwill + gw) } };
     return pushLog(s, 'good', `Resolved case. Goodwill +${gw}.`, 'casework');
+}
+export function requestEndorsement(state, id) {
+    if (state.calendar.blocksLeft <= 0)
+        return pushLog(state, 'warn', 'No time blocks left this week.');
+    const actor = state.actors.find(a => a.id === id);
+    if (!actor)
+        return pushLog(state, 'warn', `Unknown stakeholder (${id}).`, 'endorsement');
+    if (actor.endorsed)
+        return pushLog(state, 'info', `${actor.name} already endorsed you.`, 'endorsement');
+    const weeksSince = actor.lastEndorseAskWeek == null ? Number.POSITIVE_INFINITY : (state.week - actor.lastEndorseAskWeek);
+    if (weeksSince < 4) {
+        return pushLog(state, 'warn', `${actor.name} was asked recently. Try again in ${4 - weeksSince} week(s).`, 'endorsement');
+    }
+    // Consume a block to make the ask
+    let s = { ...state, calendar: consume(state.calendar, 1) };
+    // Relationship gate
+    if (actor.disposition < 5) {
+        const actors = s.actors.map(a => a.id === id ? { ...a, lastEndorseAskWeek: s.week } : a);
+        s = { ...s, actors };
+        return pushLog(s, 'warn', `${actor.name} declined: relationship too weak.`, 'endorsement');
+    }
+    // Roll with disposition + leverage (seeded)
+    const rng = rngFor(s.seed, s.rngTick + 500 + s.calendar.blocksLeft);
+    const threshold = Math.max(20, Math.min(90, 30 + actor.disposition + Math.floor(actor.leverage / 10)));
+    const roll = rng.int(0, 99);
+    if (roll < threshold) {
+        const actors = s.actors.map(a => a.id === id ? { ...a, endorsed: true, lastEndorseAskWeek: s.week } : a);
+        s = { ...s, actors };
+        return pushLog(s, 'good', `${actor.name} **endorsed** you!`, 'endorsement');
+    }
+    else {
+        const actors = s.actors.map(a => a.id === id ? { ...a, lastEndorseAskWeek: s.week } : a);
+        s = { ...s, actors };
+        return pushLog(s, 'warn', `${actor.name} declined to endorse.`, 'endorsement');
+    }
 }
