@@ -2,23 +2,17 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import Panel from '../components/Panel';
 import { useGameStore } from '../state/useGame';
 export default function Stakeholders() {
-    const state = useGameStore(s => s.state);
-    const meet = useGameStore(s => s.meetStakeholder);
-    const askEndorse = useGameStore(s => s.askForEndorsement);
-    const actors = state.actors ?? [];
-    return (_jsx(Panel, { title: "Stakeholders", children: _jsx("div", { className: "table-scroll", children: _jsxs("table", { className: "table-fixed", children: [_jsxs("colgroup", { children: [_jsx("col", { style: { width: '38%' } }), _jsx("col", { style: { width: '18%' } }), _jsx("col", { style: { width: '14%' } }), _jsx("col", { style: { width: '14%' } }), _jsx("col", { style: { width: '16%' } })] }), _jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { align: "left", children: "Name" }), _jsx("th", { align: "left", children: "Faction" }), _jsx("th", { children: "Disposition" }), _jsx("th", { children: "Leverage" }), _jsx("th", {})] }) }), _jsx("tbody", { children: actors.map((a) => {
-                            const disp = typeof a.disposition === 'number' ? a.disposition : 0;
-                            const lev = typeof a.leverage === 'number' ? a.leverage : 0;
-                            const endorsed = a.endorsed === true;
-                            const eligible = !endorsed && disp + lev >= 8; // UI gate; store does final check
-                            return (_jsxs("tr", { style: { borderTop: '1px solid #2a2f55' }, children: [_jsxs("td", { className: "td-ellipsis", children: [a.name, endorsed && (_jsx("span", { style: {
-                                                    marginLeft: 8,
-                                                    fontSize: 12,
-                                                    padding: '2px 6px',
-                                                    borderRadius: 999,
-                                                    border: '1px solid #22c55e',
-                                                    color: '#22c55e',
-                                                    background: 'rgba(34,197,94,0.08)',
-                                                }, title: "This stakeholder has endorsed you", children: "\u2713 Endorsed" }))] }), _jsx("td", { className: "td-ellipsis", children: a.faction }), _jsx("td", { align: "center", children: disp }), _jsx("td", { align: "center", children: lev }), _jsx("td", { align: "right", children: _jsxs("div", { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' }, children: [_jsx("button", { className: "btn", onClick: () => meet(a.id), title: "Meet to build relationship", children: "Meet" }), _jsx("button", { className: "btn", disabled: !eligible, onClick: () => askEndorse(a.id), title: eligible ? 'Ask for Endorsement' : 'Build disposition/leverage first', children: "Ask Endorsement" })] }) })] }, a.id));
-                        }) })] }) }) }));
+    const { state, meetStakeholder, requestEndorsement } = useGameStore();
+    const rows = state.actors;
+    return (_jsx("div", { style: { maxWidth: 1000 }, children: _jsx(Panel, { title: "Stakeholders", children: _jsx("div", { className: "scroll-x", children: _jsxs("table", { className: "table table-stakeholders", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Name" }), _jsx("th", { children: "Faction" }), _jsx("th", { children: "Disposition" }), _jsx("th", { children: "Leverage" }), _jsx("th", { style: { width: 90 } }), _jsx("th", { style: { width: 140 } })] }) }), _jsx("tbody", { children: rows.map(a => {
+                                const weeksSince = a.lastEndorseAskWeek == null ? 99 : state.week - a.lastEndorseAskWeek;
+                                const onCooldown = weeksSince < 4;
+                                const canAsk = !a.endorsed && !onCooldown && state.calendar.blocksLeft > 0;
+                                const cooldownText = onCooldown ? ` (${4 - weeksSince}w)` : '';
+                                return (_jsxs("tr", { children: [_jsxs("td", { className: "name", children: [a.name, ' ', a.endorsed && _jsx("span", { className: "badge badge-good", title: "They have endorsed you", children: "Endorsed" })] }), _jsx("td", { children: a.faction }), _jsx("td", { children: a.disposition }), _jsx("td", { children: a.leverage }), _jsx("td", { style: { textAlign: 'right' }, children: _jsx("button", { className: "btn", onClick: () => meetStakeholder(a.id), children: "Meet" }) }), _jsx("td", { style: { textAlign: 'right' }, children: _jsx("button", { className: "btn", onClick: () => requestEndorsement(a.id), disabled: !canAsk, title: a.endorsed ? 'Already endorsed'
+                                                    : onCooldown ? `Asked recently${cooldownText}`
+                                                        : state.calendar.blocksLeft <= 0 ? 'No time blocks left'
+                                                            : a.disposition < 5 ? 'Relationship too weak'
+                                                                : 'Ask for endorsement', children: a.endorsed ? 'Endorsed' : onCooldown ? `Wait${cooldownText}` : 'Ask Endorsement' }) })] }, a.id));
+                            }) })] }) }) }) }));
 }
